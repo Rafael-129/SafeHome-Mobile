@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import '../models/department.dart';
 import '../models/visitor_payload.dart';
 import '../services/api_client.dart';
+import '../services/app_config.dart';
 import '../widgets/photo_picker_tile.dart';
 
 class RegisterVisitorScreen extends StatefulWidget {
@@ -25,7 +26,8 @@ class _RegisterVisitorScreenState extends State<RegisterVisitorScreen> {
   final _privacyController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
 
-  final ApiClient _apiClient = ApiClient(baseUrl: 'http://10.0.2.2:8000');
+  final AppConfig _appConfig = AppConfig();
+  ApiClient? _apiClient;
 
   List<Department> _departments = <Department>[];
   Department? _selectedDepartment;
@@ -57,7 +59,8 @@ class _RegisterVisitorScreenState extends State<RegisterVisitorScreen> {
 
   Future<void> _loadDepartments() async {
     try {
-      final departments = await _apiClient.fetchDepartments();
+      final client = _apiClient ??= ApiClient(baseUrl: await _appConfig.getBaseUrl());
+      final departments = await client.fetchDepartments();
       if (!mounted) {
         return;
       }

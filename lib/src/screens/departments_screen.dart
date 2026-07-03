@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../services/api_client.dart';
+import '../services/app_config.dart';
 
 class DepartmentsScreen extends StatefulWidget {
   const DepartmentsScreen({super.key});
@@ -10,7 +11,8 @@ class DepartmentsScreen extends StatefulWidget {
 }
 
 class _DepartmentsScreenState extends State<DepartmentsScreen> {
-  final ApiClient _apiClient = ApiClient(baseUrl: 'http://10.0.2.2:8000');
+  final AppConfig _appConfig = AppConfig();
+  ApiClient? _apiClient;
   bool _isLoading = true;
   String? _errorMessage;
   Map<String, dynamic> _profile = <String, dynamic>{};
@@ -24,8 +26,9 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
 
   Future<void> _loadData() async {
     try {
-      final profile = await _apiClient.fetchAppProfile();
-      final departments = await _apiClient.fetchDepartments();
+      final client = _apiClient ??= ApiClient(baseUrl: await _appConfig.getBaseUrl());
+      final profile = await client.fetchAppProfile();
+      final departments = await client.fetchDepartments();
       if (!mounted) {
         return;
       }

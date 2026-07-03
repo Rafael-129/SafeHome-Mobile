@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../services/api_client.dart';
+import '../services/app_config.dart';
 
 class BasicConsultationScreen extends StatefulWidget {
   const BasicConsultationScreen({super.key});
@@ -10,7 +11,8 @@ class BasicConsultationScreen extends StatefulWidget {
 }
 
 class _BasicConsultationScreenState extends State<BasicConsultationScreen> {
-  final ApiClient _apiClient = ApiClient(baseUrl: 'http://10.0.2.2:8000');
+  final AppConfig _appConfig = AppConfig();
+  ApiClient? _apiClient;
   bool _isLoading = true;
   bool _isActionLoading = false;
   String? _errorMessage;
@@ -24,7 +26,8 @@ class _BasicConsultationScreenState extends State<BasicConsultationScreen> {
 
   Future<void> _loadTodayVisitors() async {
     try {
-      final visitors = await _apiClient.fetchTodayVisitors();
+      final client = _apiClient ??= ApiClient(baseUrl: await _appConfig.getBaseUrl());
+      final visitors = await client.fetchTodayVisitors();
       if (!mounted) {
         return;
       }
@@ -50,7 +53,8 @@ class _BasicConsultationScreenState extends State<BasicConsultationScreen> {
     });
 
     try {
-      await _apiClient.finalizeVisitor(visitorId);
+      final client = _apiClient ??= ApiClient(baseUrl: await _appConfig.getBaseUrl());
+      await client.finalizeVisitor(visitorId);
       await _loadTodayVisitors();
       if (!mounted) {
         return;
