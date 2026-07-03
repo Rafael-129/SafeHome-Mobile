@@ -1,0 +1,34 @@
+# Flutter / Dart
+.dart_tool/
+.packages
+.pub/
+.pub-cache/
+build/
+coverage/
+
+# Android / iOS / desktop generated artifacts
+android/.gradle/
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+linux/flutter/
+macos/Flutter/ephemeral/
+windows/flutter/ephemeral/
+
+# IDEs / editors
+.idea/
+*.iml
+.vscode/
+
+# Generated files
+.flutter-plugins
+.flutter-plugins-dependencies
+.metadata
+
+# Logs
+*.log
+
+# Local environment files
+.env
+.env.*
