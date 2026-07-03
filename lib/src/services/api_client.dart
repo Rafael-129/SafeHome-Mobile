@@ -30,6 +30,19 @@ class ApiClient {
     }).where((department) => department.code.isNotEmpty).toList();
   }
 
+    Future<Map<String, dynamic>> fetchAppProfile() async {
+      final response = await _client.get(_uri('/api/perfil/actual/'));
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        throw ApiException('No se pudo cargar el perfil de la aplicación');
+      }
+
+      final dynamic decoded = jsonDecode(response.body);
+      if (decoded is Map<String, dynamic>) {
+        return decoded;
+      }
+      return <String, dynamic>{};
+    }
+
   Future<void> createVisitor(VisitorPayload payload) async {
     final response = await _client.post(
       _uri('/api/visitantes/'),

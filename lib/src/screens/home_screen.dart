@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../services/session_store.dart';
 import 'basic_consultation_screen.dart';
+import 'departments_screen.dart';
 import 'register_visitor_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -49,6 +50,14 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Future<void> _openDepartments() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const DepartmentsScreen(),
+      ),
+    );
+  }
+
   Future<void> _logout() async {
     await widget.onLogout();
   }
@@ -92,6 +101,13 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 16),
           _ActionCard(
             icon: Icons.apartment_outlined,
+            title: 'Departamentos',
+            description: 'Ver los departamentos y el perfil actual de la aplicación.',
+            onTap: _openDepartments,
+          ),
+          const SizedBox(height: 16),
+          _ActionCard(
+            icon: Icons.today_outlined,
             title: 'Consulta básica',
             description: 'Ver visitantes del día y refrescar datos desde el backend.',
             onTap: _openBasicConsultation,
