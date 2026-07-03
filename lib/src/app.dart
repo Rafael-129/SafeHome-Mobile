@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'services/app_config.dart';
 import 'screens/settings_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
@@ -15,8 +16,10 @@ class SafeHomeMobileApp extends StatefulWidget {
 
 class _SafeHomeMobileAppState extends State<SafeHomeMobileApp> {
   final SessionStore _sessionStore = SessionStore();
+  final AppConfig _appConfig = AppConfig();
   bool _isLoading = true;
   bool _isAuthenticated = false;
+  String? _baseUrl;
 
   @override
   void initState() {
@@ -26,11 +29,13 @@ class _SafeHomeMobileAppState extends State<SafeHomeMobileApp> {
 
   Future<void> _bootstrap() async {
     final authenticated = await _sessionStore.isAuthenticated();
+    final baseUrl = await _appConfig.getBaseUrl();
     if (!mounted) {
       return;
     }
     setState(() {
       _isAuthenticated = authenticated;
+      _baseUrl = baseUrl;
       _isLoading = false;
     });
   }
@@ -58,9 +63,21 @@ class _SafeHomeMobileAppState extends State<SafeHomeMobileApp> {
   void _openSettings() {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => const SettingsScreen(),
+        builder: (_) => SettingsScreen(
+          onSaved: _refreshConfig,
+        ),
       ),
     );
+  }
+
+  Future<void> _refreshConfig() async {
+    final baseUrl = await _appConfig.getBaseUrl();
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _baseUrl = baseUrl;
+    });
   }
 
   @override
@@ -88,7 +105,10 @@ class _SafeHomeMobileAppState extends State<SafeHomeMobileApp> {
               ),
             )
           : _isAuthenticated
-              ? HomeScreen(onLogout: _handleLogout)
+              ? HomeScreen(
+                  onLogout: _handleLogout,
+                  baseUrl: _baseUrl,
+                )
               : LoginScreen(onLogin: _handleLogin),
     );
   }

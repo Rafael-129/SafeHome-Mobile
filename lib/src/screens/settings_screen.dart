@@ -4,7 +4,9 @@ import '../services/api_client.dart';
 import '../services/app_config.dart';
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+  const SettingsScreen({super.key, this.onSaved});
+
+  final Future<void> Function()? onSaved;
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -65,6 +67,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       setState(() {
         _statusMessage = 'Configuración guardada.';
       });
+      await widget.onSaved?.call();
     } finally {
       if (mounted) {
         setState(() {
