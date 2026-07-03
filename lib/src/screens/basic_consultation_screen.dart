@@ -13,15 +13,23 @@ class BasicConsultationScreen extends StatefulWidget {
 class _BasicConsultationScreenState extends State<BasicConsultationScreen> {
   final AppConfig _appConfig = AppConfig();
   ApiClient? _apiClient;
+  final TextEditingController _searchController = TextEditingController();
   bool _isLoading = true;
   bool _isActionLoading = false;
   String? _errorMessage;
   List<Map<String, dynamic>> _visitors = <Map<String, dynamic>>[];
+  String _query = '';
 
   @override
   void initState() {
     super.initState();
     _loadTodayVisitors();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadTodayVisitors() async {
@@ -44,6 +52,21 @@ class _BasicConsultationScreenState extends State<BasicConsultationScreen> {
         _isLoading = false;
       });
     }
+  }
+
+  List<Map<String, dynamic>> get _filteredVisitors {
+    final query = _query.trim().toLowerCase();
+    if (query.isEmpty) {
+      return _visitors;
+    }
+
+    return _visitors.where((visitor) {
+      final nombre = '${visitor['nombre'] ?? ''} ${visitor['apellido'] ?? ''}'.toLowerCase();
+      final dni = visitor['dni']?.toString().toLowerCase() ?? '';
+      final motivo = visitor['motivo']?.toString().toLowerCase() ?? '';
+      final departamento = visitor['depart_visita']?.toString().toLowerCase() ?? visitor['iddepartamento']?.toString().toLowerCase() ?? '';
+      return nombre.contains(query) || dni.contains(query) || motivo.contains(query) || departamento.contains(query);
+    }).toList();
   }
 
   Future<void> _finalizeVisitor(int visitorId) async {
@@ -105,6 +128,30 @@ class _BasicConsultationScreenState extends State<BasicConsultationScreen> {
                         ),
                   ),
                   const SizedBox(height: 20),
+                  TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      labelText: 'Buscar visitante',
+                      prefixIcon: const Icon(Icons.search),
+                      suffixIcon: _query.isEmpty
+                          ? null
+                          : IconButton(
+                              onPressed: () {
+                                _searchController.clear();
+                                setState(() {
+                                  _query = '';
+                                });
+                              },
+                              icon: const Icon(Icons.clear),
+                            ),
+                    ),
+                    onChanged: (value) {
+                      setState(() {
+                        _query = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
                   if (_errorMessage != null)
                     Container(
                       padding: const EdgeInsets.all(16),
@@ -117,10 +164,10 @@ class _BasicConsultationScreenState extends State<BasicConsultationScreen> {
                         style: const TextStyle(color: Color(0xFF9F1239)),
                       ),
                     )
-                  else if (_visitors.isEmpty)
+                  else if (_filteredVisitors.isEmpty)
                     const _EmptyState()
                   else
-                    ..._visitors.map(
+                    ..._filteredVisitors.map(
                       (visitor) => _VisitorTile(
                         visitor,
                         onFinalize: _isActionLoading

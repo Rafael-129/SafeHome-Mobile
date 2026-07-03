@@ -13,15 +13,23 @@ class DepartmentsScreen extends StatefulWidget {
 class _DepartmentsScreenState extends State<DepartmentsScreen> {
   final AppConfig _appConfig = AppConfig();
   ApiClient? _apiClient;
+  final TextEditingController _searchController = TextEditingController();
   bool _isLoading = true;
   String? _errorMessage;
   Map<String, dynamic> _profile = <String, dynamic>{};
   List<Map<String, dynamic>> _departments = <Map<String, dynamic>>[];
+  String _query = '';
 
   @override
   void initState() {
     super.initState();
     _loadData();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadData() async {
@@ -62,6 +70,15 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
     final version = _profile['version']?.toString() ?? '1.0.0';
     final permitirSinFoto = _profile['permitir_registro_sin_foto'] == true;
     final fotoRequerida = _profile['politica_foto_requerida'] == true;
+    final filteredDepartments = _departments.where((department) {
+      final query = _query.trim().toLowerCase();
+      if (query.isEmpty) {
+        return true;
+      }
+      final displayName = department['displayName']?.toString().toLowerCase() ?? '';
+      final codigo = department['codigo']?.toString().toLowerCase() ?? '';
+      return displayName.contains(query) || codigo.contains(query);
+    }).toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -88,6 +105,30 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
                         ),
                   ),
                   const SizedBox(height: 12),
+                  TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      labelText: 'Buscar departamento',
+                      prefixIcon: const Icon(Icons.search),
+                      suffixIcon: _query.isEmpty
+                          ? null
+                          : IconButton(
+                              onPressed: () {
+                                _searchController.clear();
+                                setState(() {
+                                  _query = '';
+                                });
+                              },
+                              icon: const Icon(Icons.clear),
+                            ),
+                    ),
+                    onChanged: (value) {
+                      setState(() {
+                        _query = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
                   Wrap(
                     spacing: 12,
                     runSpacing: 12,
@@ -110,10 +151,10 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
                         style: const TextStyle(color: Color(0xFF9F1239)),
                       ),
                     )
-                  else if (_departments.isEmpty)
+                  else if (filteredDepartments.isEmpty)
                     const _EmptyState()
                   else
-                    ..._departments.map(
+                    ...filteredDepartments.map(
                       (department) => Card(
                         margin: const EdgeInsets.only(bottom: 12),
                         child: ListTile(
