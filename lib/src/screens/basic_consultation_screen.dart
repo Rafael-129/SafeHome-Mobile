@@ -12,6 +12,7 @@ class BasicConsultationScreen extends StatefulWidget {
 class _BasicConsultationScreenState extends State<BasicConsultationScreen> {
   final ApiClient _apiClient = ApiClient(baseUrl: 'http://10.0.2.2:8000');
   bool _isLoading = true;
+  bool _isActionLoading = false;
   String? _errorMessage;
   List<Map<String, dynamic>> _visitors = <Map<String, dynamic>>[];
 
@@ -39,6 +40,37 @@ class _BasicConsultationScreenState extends State<BasicConsultationScreen> {
         _errorMessage = error.toString();
         _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _finalizeVisitor(int visitorId) async {
+    setState(() {
+      _isActionLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      await _apiClient.finalizeVisitor(visitorId);
+      await _loadTodayVisitors();
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Visita finalizada')),
+      );
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _errorMessage = error.toString();
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isActionLoading = false;
+        });
+      }
     }
   }
 
@@ -84,7 +116,24 @@ class _BasicConsultationScreenState extends State<BasicConsultationScreen> {
                   else if (_visitors.isEmpty)
                     const _EmptyState()
                   else
-                    ..._visitors.map(_VisitorTile.new),
+                    ..._visitors.map(
+                      (visitor) => _VisitorTile(
+                        visitor,
+                        onFinalize: _isActionLoading
+                            ? null
+                            : () {
+                                final id = visitor['idvisitante'];
+                                if (id is int) {
+                                  _finalizeVisitor(id);
+                                } else if (id is String) {
+                                  final parsed = int.tryParse(id);
+                                  if (parsed != null) {
+                                    _finalizeVisitor(parsed);
+                                  }
+                                }
+                              },
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -93,9 +142,10 @@ class _BasicConsultationScreenState extends State<BasicConsultationScreen> {
 }
 
 class _VisitorTile extends StatelessWidget {
-  const _VisitorTile(this.data);
+  const _VisitorTile(this.data, {this.onFinalize});
 
   final Map<String, dynamic> data;
+  final VoidCallback? onFinalize;
 
   @override
   Widget build(BuildContext context) {
@@ -113,6 +163,12 @@ class _VisitorTile extends StatelessWidget {
         ),
         title: Text(nombre.isEmpty ? 'Visitante' : nombre),
         subtitle: Text('$dni · $motivo · Dep: $departamento'),
+        trailing: onFinalize == null
+            ? null
+            : TextButton(
+                onPressed: onFinalize,
+                child: const Text('Finalizar'),
+              ),
       ),
     );
   }

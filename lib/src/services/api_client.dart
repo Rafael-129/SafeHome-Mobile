@@ -67,6 +67,19 @@ class ApiClient {
         .toList();
   }
 
+  Future<Map<String, dynamic>> finalizeVisitor(int visitorId) async {
+    final response = await _client.post(_uri('/api/visitantes/$visitorId/finalizar/'));
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw ApiException('No se pudo finalizar la visita');
+    }
+
+    final dynamic decoded = jsonDecode(response.body);
+    if (decoded is Map<String, dynamic>) {
+      return decoded;
+    }
+    return <String, dynamic>{};
+  }
+
   String _buildDepartmentLabel(Map<String, dynamic> item) {
     final torre = item['torre']?.toString() ?? '';
     final piso = item['piso']?.toString() ?? '';
