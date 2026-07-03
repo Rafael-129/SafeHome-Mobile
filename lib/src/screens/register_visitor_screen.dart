@@ -149,7 +149,7 @@ class _RegisterVisitorScreenState extends State<RegisterVisitorScreen> {
       lastName: _lastNameController.text,
       documentNumber: _documentController.text,
       visitDate: DateFormat('yyyy-MM-dd').format(_selectedDate),
-      visitTime: _selectedTime.format(context),
+      visitTime: _formatTimeForBackend(_selectedTime),
       departmentCode: _selectedDepartment!.code,
       acceptTerms: _acceptTerms,
       acceptPhoto: _acceptPhoto,
@@ -194,6 +194,12 @@ class _RegisterVisitorScreenState extends State<RegisterVisitorScreen> {
         });
       }
     }
+  }
+
+  String _formatTimeForBackend(TimeOfDay timeOfDay) {
+    final hour = timeOfDay.hour.toString().padLeft(2, '0');
+    final minute = timeOfDay.minute.toString().padLeft(2, '0');
+    return '$hour:$minute:00';
   }
 
   @override

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../services/session_store.dart';
+import 'basic_consultation_screen.dart';
 import 'register_visitor_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -36,6 +37,14 @@ class _HomeScreenState extends State<HomeScreen> {
     await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => const RegisterVisitorScreen(),
+      ),
+    );
+  }
+
+  Future<void> _openBasicConsultation() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const BasicConsultationScreen(),
       ),
     );
   }
@@ -84,9 +93,8 @@ class _HomeScreenState extends State<HomeScreen> {
           _ActionCard(
             icon: Icons.apartment_outlined,
             title: 'Consulta básica',
-            description: 'Próximamente: departamentos, visitantes del día y estado de registros.',
-            onTap: () {},
-            isDisabled: true,
+            description: 'Ver visitantes del día y refrescar datos desde el backend.',
+            onTap: _openBasicConsultation,
           ),
         ],
       ),

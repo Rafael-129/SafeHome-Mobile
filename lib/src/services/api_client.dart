@@ -53,6 +53,20 @@ class ApiClient {
     }
   }
 
+  Future<List<Map<String, dynamic>>> fetchTodayVisitors() async {
+    final response = await _client.get(_uri('/api/visitantes/hoy/'));
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw ApiException('No se pudieron cargar los visitantes de hoy');
+    }
+
+    final dynamic decoded = jsonDecode(response.body);
+    final List<dynamic> items = decoded is List ? decoded : (decoded['results'] as List<dynamic>? ?? <dynamic>[]);
+
+    return items
+        .whereType<Map<String, dynamic>>()
+        .toList();
+  }
+
   String _buildDepartmentLabel(Map<String, dynamic> item) {
     final torre = item['torre']?.toString() ?? '';
     final piso = item['piso']?.toString() ?? '';
